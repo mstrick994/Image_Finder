@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallpaper Finder</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="main.css">
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <!-- Main content -->
+
+  <header class="text-center mb-2">
+    <h1>Image Gallery Updated</h1>
+    <div class="d-flex justify-content-center mt-3">
+   
+      <form id="searchForm" class="form-inline mt-3">
+        <div class="form-group">
+          <input type="search" id="search" class="form-control" placeholder="Search images">
+          <button type="submit" class="btn btn-success ml-auto btn-large align-button" id="searchButton">Search</button>
+        </div>
+      </form>
+    </div>
+  </header>
+
+
+  <section class="gallery-container">
+    <div id="gallery" class="gallery-grid">
+      <!-- Gallery images will be dynamically inserted here -->
+    </div>
+  </section>
+  <button id="loadMoreBtn" class="btn btn-primary">Load More</button>
+
+
+  <!-- Bootstrap modal for errors -->
+  <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="errorModalLabel">Error</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="errorModalBody">
+          <!-- Error message content will be inserted here -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup modal for full-size image display -->
+  <div class="popup" id="popup">
+    <span class="popup-close">&times;</span>
+    <img src="" alt="" class="popup-content" id="popup-img">
+  </div>
+
+  <!-- Masonry and imagesLoaded scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/imagesloaded@4.1.4/imagesloaded.pkgd.min.js"></script>
+
+  <!-- Bootstrap and custom scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
+
+/* General body styling */
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Header styles */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  padding: 1rem;
+  z-index: 1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.gallery-container {
+  width: 1200px; /* or 1280px */
+  max-width: 100%;
+  padding: 1rem;
+  margin: 5rem auto 0;
+}
+
+
+/* Other existing styles... */
+
+
+/* Styles for larger screens */
+@media (min-width: 768px) {
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Adjust this value */
+    grid-auto-rows: minmax(300px, auto);
+  }
+}
+
+
+
+  .grid-item {
+    display: block;
+  }
+
+  .grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+
+/* Styles for smaller screens */
+@media (max-width: 767px) {
+  .gallery-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .grid-item {
+    width: 48%;
+    margin-bottom: 1rem;
+  }
+
+  .grid-item img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+}
+
+.photo-item {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.photo-item:hover {
+  transform: scale(1.05);
+}
+
+/* Styles for popup modal */
+.popup {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.8);
+}
+
+.popup-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+.popup-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.popup-close:hover,
+.popup-close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+document.addEventListener("DOMContentLoaded", function () {
+  const API_KEY = 'qi4emWEzgGGwF2Pke0yD6oYs5cJmeeVJImfOkXF5vmvcM1p50wysnBMu'; // Replace with your actual API key
+  const searchForm = document.querySelector('#searchForm');
+  const searchInput = document.getElementById('search');
+  const gallery = document.getElementById('gallery');
+  const popup = document.getElementById('popup');
+  const popupClose = document.querySelector('.popup-close');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+  let currentPage = 1;
+  let query = 'nature'; // Default search query
+
+  // Initialize Masonry
+  let masonry;
+
+  function initMasonry() {
+    const galleryGrid = document.querySelector('.gallery-grid');
+    masonry = new Masonry(galleryGrid, {
+      itemSelector: '.grid-item',
+      columnWidth: 300, // Match the minimum column width in your CSS
+      percentPosition: true
+    });
+  }
+
+  function fetchPhotos(query, page = 1, initialLoad = false) {
+    const screenWidth = window.innerWidth;
+    const gridColumnWidth = 300; // Match the column width in your CSS
+    const numColumns = Math.floor(screenWidth / gridColumnWidth);
+    const numRows = 3; // Adjust this value based on your desired number of rows
+    const imagesPerPage = numColumns * numRows;
+  
+    const url = `https://api.pexels.com/v1/search?query=${query}&per_page=${imagesPerPage}&page=${page}`;
+  
+    fetch(url, {
+      headers: {
+        Authorization: API_KEY,
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+  
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response content type');
+      }
+  
+      return response.json();
+    })
+    .then(data => {
+      console.log('Data:', data);
+      displayPhotos(data.photos, !initialLoad); // Pass a flag to indicate if it's a new page
+    })
+    .catch(error => {
+      displayErrorModal('Error fetching photos. Please try again later.');
+      console.error('Error fetching photos:', error);
+    });
+  }
+  
+
+  function displayPhotos(photos, isNewPage = true) {
+    // Add photos to the gallery
+    const galleryItems = photos.map(photo => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // Set the crossOrigin attribute
+        img.src = photo.src.medium; // Keep the original image URL
+        img.alt = photo.photographer;
+        img.classList.add('photo-item');
+  
+        img.onload = () => {
+          const maxWidth = 400; // Set the desired maximum width in pixels
+          const maxHeight = 400; // Set the desired maximum height in pixels
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const originalWidth = photo.width;
+          const originalHeight = photo.height;
+          const aspectRatio = originalWidth / originalHeight;
+  
+          let newWidth, newHeight;
+  
+          if (originalWidth > maxWidth && originalHeight > maxHeight) {
+            // If both dimensions exceed the maximum, resize based on the smaller ratio
+            const widthRatio = maxWidth / originalWidth;
+            const heightRatio = maxHeight / originalHeight;
+            const smallerRatio = Math.min(widthRatio, heightRatio);
+            newWidth = originalWidth * smallerRatio;
+            newHeight = originalHeight * smallerRatio;
+          } else if (originalWidth > maxWidth) {
+            // If the width exceeds the maximum, resize based on the maximum width
+            newWidth = maxWidth;
+            newHeight = maxWidth / aspectRatio;
+          } else if (originalHeight > maxHeight) {
+            // If the height exceeds the maximum, resize based on the maximum height
+            newHeight = maxHeight;
+            newWidth = maxHeight * aspectRatio;
+          } else {
+            // If both dimensions are within the maximum, use the original dimensions
+            newWidth = originalWidth;
+            newHeight = originalHeight;
+          }
+  
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+  
+          // Create a Blob from the canvas data
+          canvas.toBlob(blob => {
+            // Create an object URL from the Blob
+            const objectURL = URL.createObjectURL(blob);
+  
+            // Create a new image element for the resized image
+            const resizedImg = new Image();
+            resizedImg.src = objectURL;
+            resizedImg.width = newWidth;
+            resizedImg.height = newHeight;
+  
+            const imageStyle = ImageGridItem({ image: { src: photo.src } });
+            Object.assign(resizedImg.style, imageStyle);
+  
+            const gridItem = document.createElement('div');
+            gridItem.classList.add('grid-item');
+            gridItem.appendChild(resizedImg);
+  
+            resolve(gridItem);
+          }, 'image/jpeg', 0.8); // Specify the desired image quality (0.8 in this case)
+        };
+  
+        img.onerror = () => {
+          reject(new Error('Failed to load image'));
+        };
+      });
+    });
+  
+  
+    Promise.allSettled(galleryItems)
+      .then(results => {
+        const items = results.reduce((acc, result) => {
+          if (result.status === 'fulfilled') {
+            acc.push(result.value);
+          } else {
+            console.error('Error displaying photo:', result.reason);
+          }
+          return acc;
+        }, []);
+  
+        // Randomize the order of the gallery items
+        items.sort(() => Math.random() - 0.5);
+  
+        const galleryGrid = document.querySelector('.gallery-grid');
+  
+        if (!isNewPage) {
+          galleryGrid.innerHTML = '';
+        }
+  
+        // Initialize Masonry before appending the items
+        initMasonry(galleryGrid);
+  
+        items.forEach(item => galleryGrid.appendChild(item));
+      })
+      .catch(error => {
+        console.error('Error displaying photos:', error);
+      });
+  }
+  
+  function initMasonry(galleryGrid) {
+    const masonry = new Masonry(galleryGrid, {
+      itemSelector: '.grid-item',
+      columnWidth: 300, // Match the minimum column width in your CSS
+      percentPosition: true
+    });
+  
+    // Optionally, you can add an event listener to handle layout changes
+    masonry.on('layoutComplete', function () {
+      console.log('Masonry layout is complete');
+    });
+  
+    masonry.on('removeComplete', function () {
+      console.log('Masonry remove is complete');
+    });
+  }
+  
+  
+  
+
+  function displayErrorModal(message) {
+    const errorModalBody = document.getElementById('errorModalBody');
+    if (errorModalBody) {
+      errorModalBody.textContent = message;
+      $('#errorModal').modal('show'); // Show the Bootstrap modal
+    } else {
+      console.error('Error modal element not found.');
+      // Fallback error handling (e.g., show an alert)
+      alert(message);
+    }
+  }
+
+  if (searchForm) {
+    // Event listener for search form submission
+    searchForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      query = searchInput.value.trim();
+      if (!query) {
+        displayErrorModal('Please enter a search term.');
+        return;
+      }
+      currentPage = 1;
+      fetchPhotos(query, currentPage);
+    });
+  } else {
+    console.error('Search form element not found.');
+  }
+
+  // Load More button event listener
+  loadMoreBtn.addEventListener('click', () => {
+    currentPage++;
+    fetchPhotos(query, currentPage);
+  });
+
+  // Close popup
+  popupClose.addEventListener('click', () => {
+    popup.style.display = "none";
+  });
+
+  function ImageGridItem({ image }) {
+    const { width, height } = image.src;
+    const style = {
+      gridColumnEnd: `span ${getSpanEstimate(width)}`,
+      gridRowEnd: `span ${getSpanEstimate(height)}`,
+    };
+
+    return style;
+  }
+
+  function getSpanEstimate(size) {
+    if (size > 250) {
+      return 2
+    }
+
+    return 1
+  }
+
+  // Load default photos
+  fetchPhotos(query, 1, true);
+});

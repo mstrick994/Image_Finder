@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^3.0.0",
+    "masonry-layout": "^4.2.2"
+  },
+  "Get element by Id": {
+    "prefix": "getid",
+    "body": "const $el = document.GetElementById('$el');",
+    "description": "Get DOM element by ID"
+  },
+  "devDependencies": {
+    "dotenv-webpack": "^8.1.0",
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-node-externals": "^3.0.0"
+  }
+}
