@@ -3,7 +3,6 @@ const searchInput = document.querySelector(".search input");
 
 const loadMoreBtn = document.querySelector(".gallery .load-more");
 const lightbox = document.querySelector(".lightbox");
-const downloadImgBtn = lightbox.querySelector(".uil-import");
 const closeImgBtn = lightbox.querySelector(".close-icon");
 
 const apiKey = "qi4emWEzgGGwF2Pke0yD6oYs5cJmeeVJImfOkXF5vmvcM1p50wysnBMu";
@@ -52,7 +51,7 @@ const showLightbox = (imgUrl) => {
     const buttonsDiv = document.createElement('div');
     buttonsDiv.classList.add('buttons');
     const downloadBtn = document.createElement('i');
-    downloadBtn.classList.add('uil', 'uil-import');
+    downloadBtn.classList.add('uil', 'uil-import', 'download-icon');
     downloadBtn.addEventListener('click', () => downloadImg(imgUrl));
     const closeBtn = document.createElement('i');
     closeBtn.classList.add('uil', 'uil-times', 'close-icon');
@@ -188,4 +187,3 @@ getImages(`https://api.pexels.com/v1/curated?page=${currentPage}&per_page=${perP
 loadMoreBtn.addEventListener("click", loadMoreImages);
 searchInput.addEventListener("keyup", loadSearchImages);
 closeImgBtn.addEventListener("click", hideLightbox);
-downloadImgBtn.addEventListener("click", (e) => downloadImg(e.target.dataset.img));

@@ -79,7 +79,7 @@ body{
   font-size: 16px;
   padding: 0;
   width: 350px;
-  height: 38px; /* Adjust the height as needed */
+  height: 38px; 
 }
 
 .search-btn {
@@ -91,7 +91,7 @@ body{
   cursor: pointer;
   margin-left: 8px;
   font-size: 14px;
-  height: 38px; /* Match the height of the input */
+  height: 38px; 
 }
 
 
@@ -117,6 +117,7 @@ body{
 .search-box input:focus::placeholder {
   color: #bfbfbf;
 }
+
 .gallery {
   display: flex;
   flex-direction: column;
@@ -208,23 +209,36 @@ button, i {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.8); /* Darker background overlay */
+  background-color: rgba(0, 0, 0, 0.8); 
   display: none; /* Initially hidden */
 }
 
 .lightbox.show {
   display: block; /* Show the lightbox */
 }
-
-.lightbox img {
-  max-width: 90%;
-  max-height: 90%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  object-fit: contain;
+.preview-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 125px); /* Or whatever feels right */
+  padding: 20px;
+  position: relative;
+  z-index: 1;
 }
+
+
+
+.preview-img img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
+
+
 
 .lightbox .buttons {
   position: absolute;
@@ -241,6 +255,7 @@ button, i {
 }
 
 .wrapper header {
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -255,11 +270,11 @@ header .photographer i {
 header .photographer span {
   font-size: 1.2rem;
 }
-header .buttons i {
+.buttons i{
   height: 40px;
   width: 40px;
   display: inline-block;
-  color: #fff; /* This line sets the color of the icons to white */
+  color: #fff; 
   font-size: 1.2rem;
   line-height: 40px;
   text-align: center;
@@ -285,12 +300,12 @@ header .buttons i:last-child:hover {
   justify-content: center;
   margin-top: 25px;
 }
-.preview-img .img {
-  max-height: 65vh;
+
+.preview-img {
+  position: relative;
+  z-index: 1;
 }
 .preview-img img {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
 }
 
@@ -326,5 +341,11 @@ header .buttons i:last-child:hover {
   .gallery .load-more {
     padding: 10px 25px;
     font-size: 1.05rem;
+  }
+  .preview-img img {
+    max-height: 75vh;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
   }
 }
